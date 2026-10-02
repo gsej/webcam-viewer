@@ -66,10 +66,20 @@ async function addCamera() {
   video.autoplay = true;
   video.playsInline = true;
   video.muted = true;
+  video.disablePictureInPicture = true;
 
   const labelEl = document.createElement('div');
   labelEl.className = 'card-label';
   labelEl.textContent = label;
+
+  const mirrorBtn = document.createElement('button');
+  mirrorBtn.className = 'mirror-btn';
+  mirrorBtn.setAttribute('aria-label', `Mirror ${label}`);
+  mirrorBtn.textContent = '⇄';
+  mirrorBtn.addEventListener('click', () => {
+    const on = video.classList.toggle('mirrored');
+    mirrorBtn.classList.toggle('active', on);
+  });
 
   const removeBtn = document.createElement('button');
   removeBtn.className = 'remove-btn';
@@ -77,7 +87,7 @@ async function addCamera() {
   removeBtn.textContent = '×';
   removeBtn.addEventListener('click', () => removeCamera(id));
 
-  card.append(video, labelEl, removeBtn);
+  card.append(video, labelEl, mirrorBtn, removeBtn);
   elements.grid.appendChild(card);
 
   try {

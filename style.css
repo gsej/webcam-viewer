@@ -187,6 +187,8 @@ body {
   object-fit: cover;
 }
 
+.card video.mirrored { transform: scaleX(-1); }
+
 .card-label {
   position: absolute;
   bottom: 0;
@@ -199,10 +201,10 @@ body {
   pointer-events: none;
 }
 
+.mirror-btn,
 .remove-btn {
   position: absolute;
   top: 0.5rem;
-  right: 0.5rem;
   width: 1.6rem;
   height: 1.6rem;
   padding: 0;
@@ -220,5 +222,12 @@ body {
   transition: opacity 0.15s, background 0.15s;
 }
 
+.remove-btn { right: 0.5rem; }
+.mirror-btn { left: 0.5rem; font-size: 0.85rem; }
+
+.card:hover .mirror-btn,
 .card:hover .remove-btn { opacity: 1; }
+
 .remove-btn:hover { background: rgba(220, 38, 38, 0.8); }
+.mirror-btn:hover { background: rgba(0, 0, 0, 0.8); }
+.mirror-btn.active { background: #2563eb; opacity: 1; }
