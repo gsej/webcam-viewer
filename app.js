@@ -1,12 +1,16 @@
+const MIN_WIDTHS = { s: '280px', m: '560px', l: '900px' };
+
 const elements = {
-  select:   document.getElementById('camera-select'),
-  grantBtn: document.getElementById('grant-btn'),
-  stopBtn:  document.getElementById('stop-btn'),
-  status:   document.getElementById('status'),
-  video:    document.getElementById('preview'),
+  grantBtn:  document.getElementById('grant-btn'),
+  select:    document.getElementById('camera-select'),
+  addBtn:    document.getElementById('add-btn'),
+  status:    document.getElementById('status'),
+  grid:      document.getElementById('grid'),
+  sizeBtns:  document.querySelectorAll('.size-btn'),
 };
 
-let activeStream = null;
+let cardCounter = 0;
+const cards = new Map(); // cardId -> { stream }
 
 function setStatus(msg, isError = false) {
   elements.status.textContent = msg;
@@ -17,7 +21,7 @@ async function populateCameras() {
   const devices = await navigator.mediaDevices.enumerateDevices();
   const cameras = devices.filter(d => d.kind === 'videoinput');
 
-  elements.select.innerHTML = '<option value="">-- select a camera --</option>';
+  elements.select.innerHTML = '<option value="">-- select camera --</option>';
   cameras.forEach((cam, i) => {
     const opt = document.createElement('option');
     opt.value = cam.deviceId;
@@ -25,43 +29,75 @@ async function populateCameras() {
     elements.select.appendChild(opt);
   });
 
-  elements.select.disabled = cameras.length === 0;
-
   if (cameras.length === 0) {
     setStatus('No cameras found.', true);
-  } else if (cameras.length === 1) {
-    elements.select.value = cameras[0].deviceId;
-    await startCamera(cameras[0].deviceId);
-  } else {
-    setStatus(`${cameras.length} cameras found. Select one to preview.`);
+    return;
   }
+
+  elements.select.hidden = false;
+  elements.select.disabled = false;
+  elements.addBtn.hidden = false;
+  elements.addBtn.disabled = false;
+  setStatus(`${cameras.length} camera${cameras.length !== 1 ? 's' : ''} available.`);
 }
 
-async function startCamera(deviceId) {
-  stopCamera();
+async function addCamera() {
+  const deviceId = elements.select.value;
+  if (!deviceId) return;
+
+  const label = elements.select.options[elements.select.selectedIndex].text;
+  const id = ++cardCounter;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `card-${id}`;
+
+  const video = document.createElement('video');
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
+
+  const labelEl = document.createElement('div');
+  labelEl.className = 'card-label';
+  labelEl.textContent = label;
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-btn';
+  removeBtn.setAttribute('aria-label', `Remove ${label}`);
+  removeBtn.textContent = '×';
+  removeBtn.addEventListener('click', () => removeCamera(id));
+
+  card.append(video, labelEl, removeBtn);
+  elements.grid.appendChild(card);
+
   try {
-    const constraints = {
-      video: deviceId ? { deviceId: { exact: deviceId } } : true,
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: { exact: deviceId } },
       audio: false,
-    };
-    activeStream = await navigator.mediaDevices.getUserMedia(constraints);
-    elements.video.srcObject = activeStream;
-    elements.video.hidden = false;
+    });
+    video.srcObject = stream;
+    cards.set(id, { stream });
     setStatus('');
-    elements.stopBtn.disabled = false;
   } catch (err) {
-    setStatus(`Could not start camera: ${err.message}`, true);
+    setStatus(`Could not open camera: ${err.message}`, true);
+    card.remove();
   }
 }
 
-function stopCamera() {
-  if (activeStream) {
-    activeStream.getTracks().forEach(t => t.stop());
-    activeStream = null;
+function removeCamera(id) {
+  const entry = cards.get(id);
+  if (entry) {
+    entry.stream.getTracks().forEach(t => t.stop());
+    cards.delete(id);
   }
-  elements.video.srcObject = null;
-  elements.video.hidden = true;
-  elements.stopBtn.disabled = true;
+  document.getElementById(`card-${id}`)?.remove();
+}
+
+function setSize(size) {
+  document.documentElement.style.setProperty('--card-min-width', MIN_WIDTHS[size]);
+  elements.sizeBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.size === size);
+  });
 }
 
 async function onGrantClick() {
@@ -71,27 +107,15 @@ async function onGrantClick() {
     // only after that will enumerateDevices() return labelled device names.
     const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     tempStream.getTracks().forEach(t => t.stop());
-    elements.grantBtn.disabled = true;
-    elements.grantBtn.textContent = 'Access granted';
+    elements.grantBtn.hidden = true;
     await populateCameras();
   } catch (err) {
     setStatus(`Permission denied: ${err.message}`, true);
   }
 }
 
-function onSelectChange() {
-  if (elements.select.value) {
-    startCamera(elements.select.value);
-  } else {
-    stopCamera();
-  }
-}
-
-function onStopClick() {
-  stopCamera();
-  setStatus('Camera stopped.');
-}
-
 elements.grantBtn.addEventListener('click', onGrantClick);
-elements.select.addEventListener('change', onSelectChange);
-elements.stopBtn.addEventListener('click', onStopClick);
+elements.addBtn.addEventListener('click', addCamera);
+elements.sizeBtns.forEach(btn => btn.addEventListener('click', () => setSize(btn.dataset.size)));
+
+setSize('m');

@@ -7,21 +7,23 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Webcam Viewer</h1>
-
-  <div id="controls">
-    <select id="camera-select" disabled>
-      <option value="">-- select a camera --</option>
-    </select>
+  <header id="top-bar">
+    <span class="title">Webcam Viewer</span>
     <button id="grant-btn">Grant camera access</button>
-    <button id="stop-btn" disabled>Stop</button>
-  </div>
+    <select id="camera-select" hidden disabled>
+      <option value="">-- select camera --</option>
+    </select>
+    <button id="add-btn" hidden disabled>Add</button>
+    <div id="size-btns">
+      <button class="size-btn" data-size="s">S</button>
+      <button class="size-btn" data-size="m">M</button>
+      <button class="size-btn" data-size="l">L</button>
+    </div>
+  </header>
 
-  <p id="status">Click "Grant camera access" to begin.</p>
+  <p id="status">Grant camera access to begin.</p>
 
-  <div id="video-container">
-    <video id="preview" autoplay playsinline muted hidden></video>
-  </div>
+  <main id="grid"></main>
 
   <script type="module" src="app.js"></script>
 </body>
