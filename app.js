@@ -109,7 +109,7 @@ let currentSize = SIZE_PRESETS.m;
 
 function applySize(px) {
   currentSize = Math.max(SIZE_MIN, Math.min(SIZE_MAX, px));
-  document.documentElement.style.setProperty('--card-min-width', `${currentSize}px`);
+  document.documentElement.style.setProperty('--card-width', `${currentSize}px`);
   elements.sizeBtns.forEach(btn => {
     btn.classList.toggle('active', SIZE_PRESETS[btn.dataset.size] === currentSize);
   });
