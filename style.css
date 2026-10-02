@@ -161,8 +161,8 @@ body {
 /* ── grid ── */
 
 #grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, var(--card-width));
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem;
@@ -173,6 +173,7 @@ body {
 
 .card {
   position: relative;
+  flex: 0 0 var(--card-width);
   background: #000;
   border-radius: 8px;
   overflow: hidden;
