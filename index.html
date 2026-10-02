@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcam Viewer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Webcam Viewer</h1>
+
+  <div id="controls">
+    <select id="camera-select" disabled>
+      <option value="">-- select a camera --</option>
+    </select>
+    <button id="grant-btn">Grant camera access</button>
+    <button id="stop-btn" disabled>Stop</button>
+  </div>
+
+  <p id="status">Click "Grant camera access" to begin.</p>
+
+  <div id="video-container">
+    <video id="preview" autoplay playsinline muted hidden></video>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
