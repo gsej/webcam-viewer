@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,10 +14,19 @@
       <option value="">-- select camera --</option>
     </select>
     <button id="add-btn" hidden disabled>Add</button>
-    <div id="size-btns">
-      <button class="size-btn" data-size="s">S</button>
-      <button class="size-btn" data-size="m">M</button>
-      <button class="size-btn" data-size="l">L</button>
+
+    <div id="view-controls">
+      <div id="theme-btns">
+        <button class="ctrl-btn theme-btn" data-theme="light">Light</button>
+        <button class="ctrl-btn theme-btn active" data-theme="dark">Dark</button>
+      </div>
+      <div id="size-btns">
+        <button class="ctrl-btn" id="size-dec" aria-label="Decrease size">−</button>
+        <button class="ctrl-btn size-btn" data-size="s">S</button>
+        <button class="ctrl-btn size-btn active" data-size="m">M</button>
+        <button class="ctrl-btn size-btn" data-size="l">L</button>
+        <button class="ctrl-btn" id="size-inc" aria-label="Increase size">+</button>
+      </div>
     </div>
   </header>
 

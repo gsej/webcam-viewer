@@ -1,13 +1,42 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── theme tokens ── */
+
 :root {
   --card-min-width: 560px;
+  --bg:               #111;
+  --surface:          #1a1a1a;
+  --border:           #2a2a2a;
+  --text:             #eee;
+  --text-dim:         #666;
+  --control-bg:       #222;
+  --control-border:   #444;
+  --control-hover:    #333;
+  --control-text:     #eee;
+  --ctrl-inactive:    #888;
+  --error:            #f87171;
 }
+
+[data-theme="light"] {
+  --bg:               #f0f0f0;
+  --surface:          #ffffff;
+  --border:           #ddd;
+  --text:             #111;
+  --text-dim:         #999;
+  --control-bg:       #f8f8f8;
+  --control-border:   #ccc;
+  --control-hover:    #e8e8e8;
+  --control-text:     #111;
+  --ctrl-inactive:    #666;
+  --error:            #dc2626;
+}
+
+/* ── base ── */
 
 body {
   font-family: system-ui, sans-serif;
-  background: #111;
-  color: #eee;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
 }
 
@@ -21,8 +50,8 @@ body {
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 1rem;
-  background: #1a1a1a;
-  border-bottom: 1px solid #2a2a2a;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
 .title {
@@ -31,16 +60,17 @@ body {
   letter-spacing: 0.03em;
   margin-right: 0.5rem;
   white-space: nowrap;
+  color: var(--text);
 }
 
 #top-bar select,
-#top-bar button {
+#top-bar > button {
   font-size: 0.85rem;
   padding: 0.35rem 0.7rem;
   border-radius: 5px;
-  border: 1px solid #444;
-  background: #222;
-  color: #eee;
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  color: var(--control-text);
   cursor: pointer;
 }
 
@@ -49,60 +79,83 @@ body {
 #add-btn {
   background: #2563eb;
   border-color: #2563eb;
+  color: #fff;
   font-weight: 500;
 }
 
 #add-btn:hover { background: #1d4ed8; border-color: #1d4ed8; }
-#add-btn:disabled { background: #444; border-color: #444; cursor: default; opacity: 0.6; }
+#add-btn:disabled { background: var(--control-bg); border-color: var(--control-border); color: var(--ctrl-inactive); cursor: default; }
 
 #grant-btn {
   background: #16a34a;
   border-color: #16a34a;
+  color: #fff;
   font-weight: 500;
 }
 
 #grant-btn:hover { background: #15803d; border-color: #15803d; }
 
-#size-btns {
+/* ── view controls (theme + size) ── */
+
+#view-controls {
   display: flex;
-  gap: 0.2rem;
+  align-items: center;
+  gap: 0.6rem;
   margin-left: auto;
 }
 
-.size-btn {
-  width: 1.9rem;
+#theme-btns,
+#size-btns {
+  display: flex;
+  gap: 0.2rem;
+}
+
+/* shared small control button */
+.ctrl-btn {
   height: 1.9rem;
-  padding: 0;
+  min-width: 1.9rem;
+  padding: 0 0.3rem;
   border-radius: 4px;
-  border: 1px solid #444;
-  background: #222;
-  color: #888;
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  color: var(--ctrl-inactive);
   font-size: 0.7rem;
   font-weight: 700;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
 }
 
-.size-btn.active {
+.ctrl-btn:hover:not(.active):not(:disabled) { background: var(--control-hover); }
+.ctrl-btn:active:not(:disabled) { transform: scale(0.85); }
+
+.ctrl-btn.active {
   background: #2563eb;
   border-color: #2563eb;
   color: #fff;
 }
 
-.size-btn:hover:not(.active) { background: #333; }
+.ctrl-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+#size-dec, #size-inc { font-size: 1rem; }
+
+.theme-btn { padding: 0 0.55rem; }
 
 /* ── status ── */
 
 #status {
   font-size: 0.82rem;
-  color: #666;
+  color: var(--text-dim);
   padding: 0.4rem 1rem;
   min-height: 1.8rem;
 }
 
-#status.error { color: #f87171; }
+#status.error { color: var(--error); }
 #status:empty { min-height: 0; padding: 0; }
 
 /* ── grid ── */

@@ -1,21 +1,31 @@
-const MIN_WIDTHS = { s: '280px', m: '560px', l: '900px' };
+const SIZE_PRESETS = { s: 280, m: 560, l: 900 };
+const SIZE_STEP = 40;
+const SIZE_MIN  = 200;
+const SIZE_MAX  = 1400;
 
 const elements = {
-  grantBtn:  document.getElementById('grant-btn'),
-  select:    document.getElementById('camera-select'),
-  addBtn:    document.getElementById('add-btn'),
-  status:    document.getElementById('status'),
-  grid:      document.getElementById('grid'),
-  sizeBtns:  document.querySelectorAll('.size-btn'),
+  grantBtn:   document.getElementById('grant-btn'),
+  select:     document.getElementById('camera-select'),
+  addBtn:     document.getElementById('add-btn'),
+  status:     document.getElementById('status'),
+  grid:       document.getElementById('grid'),
+  sizeDec:    document.getElementById('size-dec'),
+  sizeInc:    document.getElementById('size-inc'),
+  sizeBtns:   document.querySelectorAll('.size-btn'),
+  themeBtns:  document.querySelectorAll('.theme-btn'),
 };
 
 let cardCounter = 0;
 const cards = new Map(); // cardId -> { stream }
 
+// ── status ──────────────────────────────────────────────────────────────────
+
 function setStatus(msg, isError = false) {
   elements.status.textContent = msg;
   elements.status.className = isError ? 'error' : '';
 }
+
+// ── cameras ─────────────────────────────────────────────────────────────────
 
 async function populateCameras() {
   const devices = await navigator.mediaDevices.enumerateDevices();
@@ -93,14 +103,32 @@ function removeCamera(id) {
   document.getElementById(`card-${id}`)?.remove();
 }
 
-function setSize(size) {
-  document.documentElement.style.setProperty('--card-min-width', MIN_WIDTHS[size]);
+// ── size ─────────────────────────────────────────────────────────────────────
+
+let currentSize = SIZE_PRESETS.m;
+
+function applySize(px) {
+  currentSize = Math.max(SIZE_MIN, Math.min(SIZE_MAX, px));
+  document.documentElement.style.setProperty('--card-min-width', `${currentSize}px`);
   elements.sizeBtns.forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.size === size);
+    btn.classList.toggle('active', SIZE_PRESETS[btn.dataset.size] === currentSize);
+  });
+  elements.sizeDec.disabled = currentSize <= SIZE_MIN;
+  elements.sizeInc.disabled = currentSize >= SIZE_MAX;
+}
+
+// ── theme ────────────────────────────────────────────────────────────────────
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  elements.themeBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === theme);
   });
 }
 
-async function onGrantClick() {
+// ── event listeners ──────────────────────────────────────────────────────────
+
+elements.grantBtn.addEventListener('click', async () => {
   setStatus('Requesting permission…');
   try {
     // A temporary stream is needed to trigger the permission prompt;
@@ -112,10 +140,17 @@ async function onGrantClick() {
   } catch (err) {
     setStatus(`Permission denied: ${err.message}`, true);
   }
-}
+});
 
-elements.grantBtn.addEventListener('click', onGrantClick);
 elements.addBtn.addEventListener('click', addCamera);
-elements.sizeBtns.forEach(btn => btn.addEventListener('click', () => setSize(btn.dataset.size)));
 
-setSize('m');
+elements.sizeDec.addEventListener('click', () => applySize(currentSize - SIZE_STEP));
+elements.sizeInc.addEventListener('click', () => applySize(currentSize + SIZE_STEP));
+elements.sizeBtns.forEach(btn => btn.addEventListener('click', () => applySize(SIZE_PRESETS[btn.dataset.size])));
+
+elements.themeBtns.forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
+
+// ── init ─────────────────────────────────────────────────────────────────────
+
+applySize(SIZE_PRESETS.m);
+applyTheme('dark');
