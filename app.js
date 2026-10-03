@@ -164,3 +164,17 @@ elements.themeBtns.forEach(btn => btn.addEventListener('click', () => applyTheme
 
 applySize(SIZE_PRESETS.m);
 applyTheme('dark');
+
+(async () => {
+  try {
+    const perm = await navigator.permissions.query({ name: 'camera' });
+    if (perm.state === 'granted') {
+      elements.grantBtn.hidden = true;
+      const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      tempStream.getTracks().forEach(t => t.stop());
+      await populateCameras();
+    }
+  } catch {
+    // Permissions API unavailable — leave grant button visible
+  }
+})();
