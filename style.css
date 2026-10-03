@@ -144,6 +144,24 @@ body {
 
 #size-dec, #size-inc { font-size: 1rem; }
 
+#github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 4px;
+  color: var(--ctrl-inactive);
+  text-decoration: none;
+  margin-left: 0.4rem;
+  transition: color 0.15s, background 0.15s;
+}
+
+#github-link:hover {
+  color: var(--text);
+  background: var(--control-hover);
+}
+
 .theme-btn { padding: 0 0.55rem; }
 
 /* ── status ── */
