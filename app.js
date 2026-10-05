@@ -16,7 +16,19 @@ const elements = {
 };
 
 let cardCounter = 0;
-const cards = new Map(); // cardId -> { stream }
+const cards = new Map(); // cardId -> { stream, deviceId, label }
+
+// ── persistence ──────────────────────────────────────────────────────────────
+
+function savePrefs() {
+  localStorage.setItem('wcv-theme', document.documentElement.dataset.theme);
+  localStorage.setItem('wcv-size', String(currentSize));
+}
+
+function saveCameras() {
+  const cameras = [...cards.values()].map(({ deviceId, label }) => ({ deviceId, label }));
+  localStorage.setItem('wcv-cameras', JSON.stringify(cameras));
+}
 
 // ── status ──────────────────────────────────────────────────────────────────
 
@@ -51,11 +63,9 @@ async function populateCameras() {
   setStatus(`${cameras.length} camera${cameras.length !== 1 ? 's' : ''} available.`);
 }
 
-async function addCamera() {
-  const deviceId = elements.select.value;
+async function addCamera(deviceId, label) {
   if (!deviceId) return;
 
-  const label = elements.select.options[elements.select.selectedIndex].text;
   const id = ++cardCounter;
 
   const card = document.createElement('div');
@@ -96,7 +106,8 @@ async function addCamera() {
       audio: false,
     });
     video.srcObject = stream;
-    cards.set(id, { stream });
+    cards.set(id, { stream, deviceId, label });
+    saveCameras();
     setStatus('');
   } catch (err) {
     setStatus(`Could not open camera: ${err.message}`, true);
@@ -111,13 +122,14 @@ function removeCamera(id) {
     cards.delete(id);
   }
   document.getElementById(`card-${id}`)?.remove();
+  saveCameras();
 }
 
 // ── size ─────────────────────────────────────────────────────────────────────
 
 let currentSize = SIZE_PRESETS.m;
 
-function applySize(px) {
+function applySize(px, save = true) {
   currentSize = Math.max(SIZE_MIN, Math.min(SIZE_MAX, px));
   document.documentElement.style.setProperty('--card-width', `${currentSize}px`);
   elements.sizeBtns.forEach(btn => {
@@ -125,15 +137,17 @@ function applySize(px) {
   });
   elements.sizeDec.disabled = currentSize <= SIZE_MIN;
   elements.sizeInc.disabled = currentSize >= SIZE_MAX;
+  if (save) savePrefs();
 }
 
 // ── theme ────────────────────────────────────────────────────────────────────
 
-function applyTheme(theme) {
+function applyTheme(theme, save = true) {
   document.documentElement.dataset.theme = theme;
   elements.themeBtns.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.theme === theme);
   });
+  if (save) savePrefs();
 }
 
 // ── event listeners ──────────────────────────────────────────────────────────
@@ -152,7 +166,11 @@ elements.grantBtn.addEventListener('click', async () => {
   }
 });
 
-elements.addBtn.addEventListener('click', addCamera);
+elements.addBtn.addEventListener('click', () => {
+  const deviceId = elements.select.value;
+  const label = elements.select.options[elements.select.selectedIndex].text;
+  addCamera(deviceId, label);
+});
 
 elements.sizeDec.addEventListener('click', () => applySize(currentSize - SIZE_STEP));
 elements.sizeInc.addEventListener('click', () => applySize(currentSize + SIZE_STEP));
@@ -162,8 +180,8 @@ elements.themeBtns.forEach(btn => btn.addEventListener('click', () => applyTheme
 
 // ── init ─────────────────────────────────────────────────────────────────────
 
-applySize(SIZE_PRESETS.m);
-applyTheme('dark');
+applySize(Number(localStorage.getItem('wcv-size')) || SIZE_PRESETS.m, false);
+applyTheme(localStorage.getItem('wcv-theme') || 'dark', false);
 
 (async () => {
   try {
@@ -173,6 +191,10 @@ applyTheme('dark');
       const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       tempStream.getTracks().forEach(t => t.stop());
       await populateCameras();
+      const saved = JSON.parse(localStorage.getItem('wcv-cameras') || '[]');
+      for (const { deviceId, label } of saved) {
+        await addCamera(deviceId, label);
+      }
     }
   } catch {
     // Permissions API unavailable — leave grant button visible
